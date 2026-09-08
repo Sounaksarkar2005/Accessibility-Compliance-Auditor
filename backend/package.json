@@ -1,0 +1,22 @@
+{
+  "name": "a11y-auditor-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/app/api/**/*.ts",
+    "build": "tsc --noEmit",
+    "lint": "eslint src/"
+  },
+  "dependencies": {
+    "cloudinary": "^2.11.0",
+    "snowflake-sdk": "^3.3.0",
+    "uuid": "^14.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/uuid": "^10.0.0",
+    "typescript": "^5",
+    "tsx": "^4.0.0"
+  }
+}

@@ -1,0 +1,28 @@
+name: 'Accessibility Audit'
+description: 'Run accessibility audit on changed components'
+inputs:
+  cloudinary-cloud-name:
+    description: 'Cloudinary Cloud Name'
+    required: true
+  cloudinary-api-key:
+    description: 'Cloudinary API Key'
+    required: true
+  cloudinary-api-secret:
+    description: 'Cloudinary API Secret'
+    required: true
+  snowflake-account:
+    description: 'Snowflake Account Identifier'
+    required: true
+  snowflake-user:
+    description: 'Snowflake Username'
+    required: true
+  snowflake-private-key:
+    description: 'Snowflake Private Key (base64 encoded)'
+    required: true
+  audit-api-url:
+    description: 'Audit API Base URL'
+    required: true
+    default: 'https://api.yourapp.com'
+runs:
+  using: 'node20'
+  main: 'index.js'
