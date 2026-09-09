@@ -1,0 +1,8 @@
+# Python dependencies for Cloudinary accessibility_analysis function
+# Install with: pip install -r requirements-python.txt
+
+pillow>=10.0.0
+pytesseract>=0.3.10
+opencv-python>=4.8.1
+numpy>=1.24.0
+requests>=2.31.0
