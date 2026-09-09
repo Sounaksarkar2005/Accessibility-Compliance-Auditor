@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
-import { uploadForAnalysis } from '../../../lib/cloudinary';
-import { createAudit } from '../../../lib/snowflake';
-import type { SourceType } from '../../../types';
+import { uploadForAnalysis } from '../../../../lib/cloudinary';
+import { createAudit } from '../../../../lib/snowflake';
+import type { SourceType } from '../../../../types';
 
 export async function POST(req: NextRequest) {
   try {

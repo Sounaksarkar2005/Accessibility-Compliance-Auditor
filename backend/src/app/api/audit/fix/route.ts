@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateFixExplanation } from '../../../lib/snowflake';
+import { generateFixExplanation } from '../../../../lib/snowflake';
 
 export async function POST(req: NextRequest) {
   try {

@@ -30,5 +30,13 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", "figma-plugin", "cloudinary/functions_python"]
+  "exclude": [
+    "node_modules",
+    "figma-plugin",
+    "backend/figma-plugin",
+    "**/figma-plugin/**/*",
+    "cloudinary/functions_python",
+    "backend/cloudinary/functions_python",
+    "**/functions_python/**/*"
+  ]
 }

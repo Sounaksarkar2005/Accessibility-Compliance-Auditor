@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAuditWithViolations } from '../../../lib/snowflake';
-import { getAnnotatedImageUrl, getFixedImageUrl, getResponsiveUrls } from '../../../lib/cloudinary';
-import type { Violation } from '../../../types';
+import { getAuditWithViolations } from '../../../../lib/snowflake';
+import { getAnnotatedImageUrl, getFixedImageUrl, getResponsiveUrls } from '../../../../lib/cloudinary';
+import type { Violation } from '../../../../types';
 
 export async function GET(req: NextRequest) {
   try {
@@ -23,9 +23,9 @@ export async function GET(req: NextRequest) {
       ? getAnnotatedImageUrl(audit.cloudinary_public_id, violations as Violation[])
       : null;
 
-    const fixes = violations
-      .filter((v) => v.suggested_hex)
-      .map((v) => ({
+    const fixes = (violations as Violation[])
+      .filter((v: Violation) => Boolean(v.suggested_hex))
+      .map((v: Violation) => ({
         bounds: v.coordinates,
         targetHex: v.suggested_hex!,
       }));
@@ -46,11 +46,11 @@ export async function GET(req: NextRequest) {
       responsiveUrls,
       summary: {
         total: violations.length,
-        bySeverity: violations.reduce((acc, v) => {
+        bySeverity: (violations as Violation[]).reduce((acc: Record<string, number>, v: Violation) => {
           acc[v.severity] = (acc[v.severity] || 0) + 1;
           return acc;
         }, {} as Record<string, number>),
-        byRule: violations.reduce((acc, v) => {
+        byRule: (violations as Violation[]).reduce((acc: Record<string, number>, v: Violation) => {
           acc[v.rule_id] = (acc[v.rule_id] || 0) + 1;
           return acc;
         }, {} as Record<string, number>),

@@ -1,13 +1,16 @@
 // Figma Plugin: Main Code (code.ts)
+declare const figma: any;
+declare const __html__: string;
+
 figma.showUI(__html__, { width: 420, height: 650, title: 'Accessibility Compliance Auditor' });
 
-let currentAuditId = null;
+let currentAuditId: string | null = null;
 
-figma.ui.onmessage = async (msg) => {
+figma.ui.onmessage = async (msg: { type: string; fixes?: any[] }) => {
   if (msg.type === 'analyze-selection') {
     await analyzeSelection();
   } else if (msg.type === 'export-fixes') {
-    await exportFixes(msg.fixes);
+    await exportFixes(msg.fixes || []);
   }
 };
 
@@ -15,7 +18,7 @@ figma.on('selectionchange', () => {
   figma.ui.postMessage({ type: 'selection-changed', selection: figma.currentPage.selection });
 });
 
-async function analyzeSelection() {
+async function analyzeSelection(): Promise<void> {
   const selection = figma.currentPage.selection;
   if (selection.length === 0) {
     figma.notify('Select a frame or component first');
@@ -58,14 +61,15 @@ async function analyzeSelection() {
 
     // Show violations as sticky notes
     await showViolationsInFigma(node, result.violations);
-  } catch (err) {
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
     console.error(err);
-    figma.notify('Analysis failed: ' + err.message);
-    figma.ui.postMessage({ type: 'analysis-error', error: err.message });
+    figma.notify('Analysis failed: ' + errorMsg);
+    figma.ui.postMessage({ type: 'analysis-error', error: errorMsg });
   }
 }
 
-async function pollForResults(auditId) {
+async function pollForResults(auditId: string): Promise<any> {
   for (let i = 0; i < 30; i++) {
     await new Promise((r) => setTimeout(r, 2000));
     const res = await fetch(`https://api.yourapp.com/api/audit/results?auditId=${auditId}`);
@@ -77,7 +81,7 @@ async function pollForResults(auditId) {
   throw new Error('Analysis timed out');
 }
 
-async function showViolationsInFigma(parentNode, violations) {
+async function showViolationsInFigma(parentNode: any, violations: any[]): Promise<void> {
   for (const v of violations) {
     const note = figma.createStickyNote();
     note.x = v.bounds.x + v.bounds.width + 20;
@@ -92,7 +96,7 @@ async function showViolationsInFigma(parentNode, violations) {
   figma.notify(`${violations.length} violation(s) added as sticky notes`);
 }
 
-async function exportFixes(fixes) {
+async function exportFixes(fixes: any[]): Promise<void> {
   // Apply color fixes to selected nodes
   for (const fix of fixes) {
     // Implementation would map bounds to Figma nodes
@@ -100,7 +104,7 @@ async function exportFixes(fixes) {
   figma.notify('Fixes exported to Figma');
 }
 
-async function getAccessToken() {
+async function getAccessToken(): Promise<string> {
   // In production: implement OAuth or use a shared secret
   return 'demo-token';
 }
