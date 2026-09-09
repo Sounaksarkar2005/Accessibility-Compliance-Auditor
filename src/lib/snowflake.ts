@@ -1,26 +1,61 @@
 import snowflake from 'snowflake-sdk';
+import type { Connection } from 'snowflake-sdk';
 import type { Audit, Violation, Component } from '@/types';
 
-const connection = snowflake.createConnection({
-  account: process.env.SNOWFLAKE_ACCOUNT,
-  username: process.env.SNOWFLAKE_USER,
-  password: process.env.SNOWFLAKE_PASSWORD,
-  warehouse: process.env.SNOWFLAKE_WAREHOUSE || 'COMPUTE_WH',
-  database: process.env.SNOWFLAKE_DATABASE || 'A11Y_AUDITOR',
-  schema: process.env.SNOWFLAKE_SCHEMA || 'PUBLIC',
-});
+let connection: Connection | null = null;
+let connectionPromise: Promise<Connection> | null = null;
+
+function createConnection(): Connection {
+  const account = process.env.SNOWFLAKE_ACCOUNT;
+  const username = process.env.SNOWFLAKE_USER;
+  const password = process.env.SNOWFLAKE_PASSWORD;
+
+  if (!account || !username || !password) {
+    throw new Error('Snowflake configuration is missing required environment variables.');
+  }
+
+  return snowflake.createConnection({
+    account,
+    username,
+    password,
+    warehouse: process.env.SNOWFLAKE_WAREHOUSE || 'COMPUTE_WH',
+    database: process.env.SNOWFLAKE_DATABASE || 'A11Y_AUDITOR',
+    schema: process.env.SNOWFLAKE_SCHEMA || 'PUBLIC',
+  });
+}
 
 export async function connect(): Promise<void> {
-  return new Promise((resolve, reject) => {
-    connection.connect((err) => (err ? reject(err) : resolve()));
-  });
+  if (connection?.isUp()) return;
+
+  if (!connectionPromise) {
+    connection = createConnection();
+    connectionPromise = connection.connectAsync()
+      .then((connected) => {
+        connection = connected;
+        connectionPromise = null;
+        return connected;
+      })
+      .catch((error) => {
+        connection = null;
+        connectionPromise = null;
+        throw error;
+      });
+  }
+
+  await connectionPromise;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function execute<T = unknown>(sql: string, binds?: any[]): Promise<T[]> {
   await connect();
+  const activeConnection = connection;
+
+  if (!activeConnection) {
+    throw new Error('Snowflake connection was not established.');
+  }
+
   return new Promise((resolve, reject) => {
-    connection.execute({
+    activeConnection.execute({
       sqlText: sql,
       binds,
       complete: (err, _stmt, rows) => (err ? reject(err) : resolve(rows as T[])),
@@ -31,7 +66,13 @@ export async function execute<T = unknown>(sql: string, binds?: any[]): Promise<
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function executeStream(sql: string, binds?: any[]): Promise<AsyncIterable<unknown>> {
   await connect();
-  const stmt = connection.execute({
+  const activeConnection = connection;
+
+  if (!activeConnection) {
+    throw new Error('Snowflake connection was not established.');
+  }
+
+  const stmt = activeConnection.execute({
     sqlText: sql,
     binds,
     streamResult: true,
